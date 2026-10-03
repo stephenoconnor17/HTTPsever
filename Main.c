@@ -47,7 +47,16 @@ int main(){
     }
 
     printf("Connection\n");
-    
+
+    char msg[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 26\r\n\r\n<h1>HELLO IT WORKS!</h1>\r\n";
+
+    ssize_t wrote = write(connectfd,msg,sizeof(msg) - 1);
+    if(wrote == -1){
+        perror("write");
+        exit(1);
+    }
+    printf("wrote %zd bytes\n", wrote);
+
     close(connectfd);
     close(sockfd);
     return 0;
