@@ -41,7 +41,7 @@ int getconnection(int sockfd){
      //GETTING CONNECTION
     printf("WAITING\n");
     int wait = listen(sockfd, 1);
-    if(sockfd == -1){
+    if(wait == -1){
         perror("listen");
         exit(1);
     }
@@ -56,6 +56,12 @@ int getconnection(int sockfd){
     printf("Connection\n");
 
     return connectfd;
+}
+
+ssize_t getrequest(int connection_fd, char* buf, size_t count){
+    ssize_t bytesReceived = read(connection_fd,(void *) buf, count);
+    buf[bytesReceived] = '\0';
+    return bytesReceived;
 }
 
 //error handling
@@ -96,3 +102,4 @@ ssize_t write_http(int connection_fd, char* header, size_t header_size, char* bo
 
 
 }
+

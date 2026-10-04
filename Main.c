@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "Server.h"
 #include "FileHandler.h"
+#include "Tokeniser.h"
+#include "HTTP.h"
 
 #include <unistd.h>
 
@@ -17,7 +20,27 @@ int main(){
 
     int connectfd = getconnection(sockfd);
 
-    //"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 26\r\n\r\n";
+    //request handling
+    char buf[1024];
+    getrequest(connectfd, buf, sizeof(buf));
+
+    printf("%s", buf);
+    
+    char* ch;
+    do{
+        ch = strchr(buf, '\r');
+    }while(!ch);
+
+    *ch = '\0';
+
+    char** args = tokenise(buf);
+    
+    //printf("tokens\n");
+    for(int i = 0; args[i] != NULL ;i++){
+        printf("%s\n", args[i]);
+    }
+
+
     char header[MAX_HEADER_SIZE]; 
     int header_len = create_header(header, MAX_HEADER_SIZE, body_size);
 
@@ -27,5 +50,6 @@ int main(){
 
     close(connectfd);
     close(sockfd);
+    free_tokens(args);
     return 0;
 }
