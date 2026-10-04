@@ -48,14 +48,43 @@ int main(){
 
     printf("Connection\n");
 
-    char msg[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 26\r\n\r\n<h1>HELLO IT WORKS!</h1>\r\n";
+    /*FILE READING*/
+    FILE* fp = fopen("index.html", "rb");
+    if(!fp){
+        perror("fopen");
+        exit(1);
+    }
 
-    ssize_t wrote = write(connectfd,msg,sizeof(msg) - 1);
+    fseek(fp,0,SEEK_END);
+    long size = ftell(fp);
+    rewind(fp);
+
+    char* body = malloc(size);
+    fread(body, 1, size, fp);
+    fclose(fp);
+
+    //"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 26\r\n\r\n";
+    char msg[256]; 
+    int len = snprintf(msg, sizeof(msg),
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: %ld\r\n"
+            "\r\n", size);
+
+    ssize_t wrote = write(connectfd,msg,len);
     if(wrote == -1){
         perror("write");
         exit(1);
     }
-    printf("wrote %zd bytes\n", wrote);
+    printf("wrote header %zd bytes\n", wrote);
+
+    wrote = write(connectfd, body,size);
+     if(wrote == -1){
+        perror("write");
+        exit(1);
+    }
+    printf("wrote body %zd bytes\n", wrote);
+
 
     close(connectfd);
     close(sockfd);
