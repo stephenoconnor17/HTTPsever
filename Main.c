@@ -8,15 +8,21 @@
 #include "HTTP.h"
 
 #include <unistd.h>
+#include <linux/limits.h>
 
 #define MAX_HEADER_SIZE 256
 
+static void free_all(int connectfd, int sockfd,char* body, char** args){
+    close(connectfd);
+    close(sockfd);
+    free(body);
+    free_tokens(args);
+}
+
 int main(){
 
+    //socket setup
     int sockfd = setup_socket();
-
-    long body_size;
-    char* body = readin_file("index.html", &body_size);
 
     int connectfd = getconnection(sockfd);
 
@@ -26,20 +32,26 @@ int main(){
 
     printf("%s", buf);
     
-    char* ch;
-    do{
-        ch = strchr(buf, '\r');
-    }while(!ch);
-
-    *ch = '\0';
-
-    char** args = tokenise(buf);
+    char** args = HTTP_getargs(buf);
     
-    //printf("tokens\n");
+    /*printf("tokens\n");
     for(int i = 0; args[i] != NULL ;i++){
         printf("%s\n", args[i]);
+    }*/
+
+    char path[PATH_MAX];
+    snprintf(path, sizeof(path), "www%s", args[1]);
+    int valid_path = parse_path(path, "index.html");
+    if(valid_path != 0){
+        printf("malicious attempt\n");
+        return 1;
     }
 
+
+    //printf("%s\n",path);
+
+    long body_size;
+    char* body = readin_file(path, &body_size);
 
     char header[MAX_HEADER_SIZE]; 
     int header_len = create_header(header, MAX_HEADER_SIZE, body_size);
@@ -48,8 +60,7 @@ int main(){
 
     printf("total bytes written: %zd\n", bytes_written);
 
-    close(connectfd);
-    close(sockfd);
-    free_tokens(args);
+
+    free_all(connectfd, sockfd,body, args);
     return 0;
 }
