@@ -62,7 +62,7 @@ static void* work(void* arg){
     if(!body) goto done;
 
     char header[MAX_HEADER_SIZE]; 
-    int header_len = create_header(header, MAX_HEADER_SIZE, body_size);
+    int header_len = create_header(header, MAX_HEADER_SIZE, body_size, path);
 
     ssize_t bytes_written = write_http(connectfd, header, header_len, body, body_size);
 

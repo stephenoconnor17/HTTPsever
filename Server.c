@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <string.h>
 
 //SET UP SOCKET FD AND RETURN IT.
 int setup_socket(){
@@ -65,15 +66,6 @@ ssize_t getrequest(int connection_fd, char* buf, size_t count){
 }
 
 //error handling
-int create_header(char* msg, size_t msg_size, long size){
-    int len = snprintf(msg, msg_size,
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: %ld\r\n"
-        "\r\n", size);
-
-    return len;
-}
 
 ssize_t write_http(int connection_fd, char* header, size_t header_size, char* body, size_t body_size){
     //WRITING HEADER THEN BODY
