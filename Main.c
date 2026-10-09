@@ -19,58 +19,41 @@ static void cleanup(int connectfd, int sockfd,char* body, char** args){
     free(body);
     free_tokens(args);
 }
-
 static void* work(void* arg){
-    //int* confd = (int*)arg;
-    //int connectfd = *(confd);
     int connectfd = *(int*)arg;
     free(arg);
 
-    //request handling
     char buf[1024];
-    if(getrequest(connectfd, buf, sizeof(buf)) <= 0) goto done;
-
-    printf("%s", buf);
-    
     char** args = NULL;
+    char* body = NULL;
+    int status = 0;                       // negative = error to send
+
+    if(getrequest(connectfd, buf, sizeof(buf)) <= 0) goto done;  // nothing to reply to
 
     args = HTTP_getargs(buf);
-    if (!args || !args[0] || !args[1]) goto done;
+    if(!args || !args[0] || !args[1]){ status = -400; goto done; }
 
-   // HTTP_getargs(buf);
-    
-    /*printf("tokens\n");
-    for(int i = 0; args[i] != NULL ;i++){
-        printf("%s\n", args[i]);
-    }*/
+    if(strcmp(args[0], "GET") != 0){ status = -405; goto done; }
 
     char path[PATH_MAX];
     snprintf(path, sizeof(path), "www%s", args[1]);
-    
-    int valid_path = parse_path(path, "index.html");
-    if(valid_path != 0){
-        printf("malicious attempt\n");
-        goto done;
-    }
 
-
-    //printf("%s\n",path);
+    if(parse_path(path, "index.html") != 0){ status = -403; goto done; }
 
     long body_size;
-    char* body = readin_file(path, &body_size);
+    body = readin_file(path, &body_size);
+    if(!body){ status = -404; goto done; }
 
-    if(!body) goto done;
-
-    char header[MAX_HEADER_SIZE]; 
+    char header[MAX_HEADER_SIZE];
     int header_len = create_header(header, MAX_HEADER_SIZE, body_size, path);
+    if(header_len < 0 || header_len >= MAX_HEADER_SIZE){ status = -500; goto done; }
 
-    ssize_t bytes_written = write_http(connectfd, header, header_len, body, body_size);
-
-    printf("total bytes written: %zd\n", bytes_written);
+    write_http(connectfd, header, header_len, body, body_size);
 
 done:
-    free(body);          
-    if (args) free_tokens(args);
+    if(status < 0) send_error(connectfd, -status);
+    free(body);
+    if(args) free_tokens(args);
     close(connectfd);
     return NULL;
 }
