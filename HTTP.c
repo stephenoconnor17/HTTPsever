@@ -126,17 +126,19 @@ char** HTTP_getargs(char* buf){
     return args;
 }
 
-int parse_path(char* path, char* default_file){
+int parse_path(char* path, size_t path_size, char* default_file){
     if(strstr(path, "..") != NULL){//we found an occurance of .. , refuse.
         return 400;// this could only occur on curl, not browser side.
     }
 
     if(strcmp(path, "www/") == 0){//no field passed. default file.
+        if(strlen(path) + strlen(default_file) >= path_size){
+            return 1;   // wouldn't fit
+        }
         strcat(path, default_file);
-        return 0;
-    }else{
-        return 0;
     }
+
+    return 0;
 }
 
 static FileType getFileExt(char* path, int* error_out){

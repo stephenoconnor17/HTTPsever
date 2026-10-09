@@ -36,9 +36,10 @@ static void* work(void* arg){
     if(strcmp(args[0], "GET") != 0){ status = -405; goto done; }
 
     char path[PATH_MAX];
-    snprintf(path, sizeof(path), "www%s", args[1]);
+    int n = snprintf(path, sizeof(path), "www%s", args[1]);
+    if(n < 0 || (size_t)n >= sizeof(path)){status = -414; goto done;}
 
-    if(parse_path(path, "index.html") != 0){ status = -403; goto done; }
+    if(parse_path(path, PATH_MAX ,"index.html") != 0){ status = -403; goto done; }
 
     long body_size;
     body = readin_file(path, &body_size);
