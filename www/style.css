@@ -1,0 +1,11 @@
+body {
+  font-family: sans-serif;
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #f4f4f4;
+  color: #222;
+}
+
+h1 { color: #2a6; }
+a { color: #26a; }
+button { padding: 0.5rem 1rem; }

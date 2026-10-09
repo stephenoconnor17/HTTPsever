@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Stephen",
+    "age": 21,
+    "languages": ["C", "Java"],
+    "student": true
+  },
+  {
+    "name": "John",
+    "age": 21,
+    "languages": ["Python", "JavaScript"],
+    "student": true
+  },
+  {
+    "name": "Aoife",
+    "age": 34,
+    "languages": ["C++", "Rust", "Go"],
+    "student": false
+  },
+  {
+    "name": "Conor",
+    "age": 19,
+    "languages": ["Java"],
+    "student": true
+  }
+]
